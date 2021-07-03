@@ -48,13 +48,13 @@ module.exports = function (passport) {
   });
   passport.deserializeUser((id, cb) => {
     User.findOne({ _id: id }, (err, user) => {
-      const userInformation = {
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-      };
-      cb(err, userInformation);
+      // const userInformation = {
+      //   username: user.username,
+      //   firstName: user.firstName,
+      //   lastName: user.lastName,
+      //   email: user.email,
+      // };
+      cb(err, user);
     });
   });
 };

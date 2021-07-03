@@ -31,12 +31,12 @@ module.exports = function (passport) {
   });
   passport.deserializeUser((id, cb) => {
     User.findOne({ _id: id }, (err, user) => {
-      const userInformation = {
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      };
-      cb(err, userInformation);
+      // const userInformation = {
+      //   email: user.email,
+      //   firstName: user.firstName,
+      //   lastName: user.lastName,
+      // };
+      cb(err, user);
     });
   });
 };

@@ -5,9 +5,10 @@ const user = new mongoose.Schema({
   googleId: String,
   firstName: String,
   lastName: String,
-  streetName: String,
+  Address: String,
   secondaryAddress: String,
   number: String,
+  username: String,
 });
 
 module.exports = mongoose.model("User", user);

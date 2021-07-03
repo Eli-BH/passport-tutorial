@@ -63,6 +63,10 @@ app.post("/register", (req, res) => {
         password: hashedPassword,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
+        Address: req.body.Address,
+        secondaryAddress: req.body.secondaryAddress,
+        number: req.body.number,
+        username: req.body.username,
       });
       await newUser.save();
       res.send("User Created");
@@ -83,6 +87,28 @@ app.get(
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
+//route to get the users address
+app.get("/user/address", (req, res) => {
+  const address = {
+    Address: req.user.Address,
+    secondaryAddress: req.user.secondaryAddress,
+  };
+  res.json(address);
+});
+
+//route to get the basic user information
+app.get("/user/basic", (req, res) => {
+  const user = {
+    email: req.user.email,
+    firstName: req.user.firstName,
+    lastName: req.user.lastName,
+    username: req.user.username,
+  };
+
+  res.json(user);
+});
+
+//redirect for google authentication
 app.get(
   "/auth/google/redirect",
   passport.authenticate("google"),
