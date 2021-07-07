@@ -1,29 +1,28 @@
 const mongoose = require("mongoose");
 const express = require("express");
-const cors = require("cors");
 const passport = require("passport");
-const User = require("./User");
-const passportLocal = require("passport-local");
+
 const cookieParser = require("cookie-parser");
-const bcrypt = require("bcryptjs");
+
 const session = require("express-session");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 const port = 3001;
 
-mongoose.connect("mongodb://localhost/authDB", {
+mongoose.connect("mongodb://localhost/authPassportDB", {
   useNewUrlParser: true,
   useCreateIndex: true,
   useUnifiedTopology: true,
 });
+
 require("./passport")(passport);
 require("./passportGoogle")(passport);
-//Middleware
+
+//middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
-
-app.use(cookieParser("secretcode"));
+app.use(cookieParser("secret"));
 app.use(
   session({
     secret: "secretTunnel",
@@ -31,96 +30,12 @@ app.use(
     saveUninitialized: true,
   })
 );
-
 app.use(passport.initialize());
 app.use(passport.session());
+//end of middleware
 
-//-------End of Middleware
-
-//Routes
-app.post("/login", (req, res, next) => {
-  passport.authenticate("local", (err, user, info) => {
-    if (err) throw err;
-    if (!user) res.send("No User Exists");
-    else {
-      req.logIn(user, (err) => {
-        if (err) throw err;
-        res.send("Successfully Authenticated");
-        console.log(req.user);
-      });
-    }
-  })(req, res, next);
-});
-app.post("/register", (req, res) => {
-  User.findOne({ email: req.body.email }, async (err, doc) => {
-    if (err) throw err;
-    if (doc) res.send("User Already Exists");
-    if (!doc) {
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-      const newUser = new User({
-        email: req.body.email,
-        password: hashedPassword,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        Address: req.body.Address,
-        secondaryAddress: req.body.secondaryAddress,
-        number: req.body.number,
-        username: req.body.username,
-      });
-      await newUser.save();
-      res.send("User Created");
-    }
-  });
-});
-app.get("/user", (req, res) => {
-  res.send(req.user);
-  console.log(req.user); // The req.user stores the entire user that has been authenticated inside of it.
-});
-
-app.get("/google/user", (req, res) => {
-  console.log(req.user);
-});
-
-app.get(
-  "/login/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-//route to get the users address
-app.get("/user/address", (req, res) => {
-  const address = {
-    Address: req.user.Address,
-    secondaryAddress: req.user.secondaryAddress,
-  };
-  res.json(address);
-});
-
-//route to get the basic user information
-app.get("/user/basic", (req, res) => {
-  const user = {
-    email: req.user.email,
-    firstName: req.user.firstName,
-    lastName: req.user.lastName,
-    username: req.user.username,
-  };
-
-  res.json(user);
-});
-
-//redirect for google authentication
-app.get(
-  "/auth/google/redirect",
-  passport.authenticate("google"),
-  (req, res) => {
-    res.send(req.user);
-  }
-);
-
-app.get("/auth/logout", (req, res) => {
-  req.logout();
-  res.send(req.user);
-});
+//routes
+app.use("/api/auth", authRoutes);
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
